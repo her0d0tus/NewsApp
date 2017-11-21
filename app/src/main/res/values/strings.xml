@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">NewsApp</string>
+    <string name="no_news">No News</string>
+    <string name="no_connection">No Internet Connection</string>
+
+    <!-- Settings Menu Item -->
+    <string name="settings_menu_item">Settings</string>
+    <!-- Settings Activity Title -->
+    <string name="settings_title">News Settings</string>
+    <!-- Strings for News Topic Preference -->
+    <string name="settings_news_topic_label">Topic</string>
+    <string name="settings_news_topic_key" translatable="false">news_topic</string>
+    <string name="settings_news_topic_default" translatable="false">technology</string>
+
+</resources>
