@@ -20,6 +20,21 @@ import java.util.List;
 
 public class QueryUtils {
 
+    private static final String KEY_RESPONSE = "response";
+    private static final String KEY_RESULTS = "results";
+
+    private static final String KEY_TITLE = "webTitle";
+    private static final String KEY_SECTION_NAME = "sectionName";
+    private static final String KEY_WEB_PUBLICATION_DATE = "webPublicationDate";
+    private static final String KEY_WEB_URL = "webUrl";
+
+    private static final int READ_TIMEOUT = 1000;
+    private static final int CONNECT_TIMEOUT = 1500;
+    private static final int HTTP_RESPONSE_OK = 200;
+
+    private static final String GET_REQUEST = "GET";
+    private static final String UNICODE_FORMAT = "Utf-8";
+
     private QueryUtils() {
 
     }
@@ -56,20 +71,40 @@ public class QueryUtils {
         try {
             JSONObject root = new JSONObject(newsJSON);
 
-            JSONObject response = root.getJSONObject("response");
+            JSONObject response = root.getJSONObject(KEY_RESPONSE);
 
-            JSONArray results = response.getJSONArray("results");
+            JSONArray results = response.getJSONArray(KEY_RESULTS);
 
             for(int i = 0; i < results.length(); i++) {
 
                 JSONObject properties = results.getJSONObject(i);
 
-                String title = properties.getString("webTitle");
-                String section = properties.getString("sectionName");
-                String dateTime = properties.getString("webPublicationDate");
-                String url = properties.getString("webUrl");
+                String title = properties.getString(KEY_TITLE);
+                String section = properties.getString(KEY_SECTION_NAME);
+                String dateTime = properties.getString(KEY_WEB_PUBLICATION_DATE);
+                String url = properties.getString(KEY_WEB_URL);
 
-                articles.add(new NewsArticle(title, section, dateTime, url));
+                JSONArray tags = properties.getJSONArray("tags");
+
+                String author = "";
+
+                int authors = tags.length();
+
+                if (authors == 0) {
+                    author = "N/A";
+                } else {
+                    for (int j = 0; j < authors; j++) {
+                        if (j > 0) {
+                            author += ", ";
+                        }
+
+                        JSONObject tag = tags.getJSONObject(j);
+
+                        author += tag.getString(KEY_TITLE);
+                    }
+                }
+
+                articles.add(new NewsArticle(title, author, section, dateTime, url));
             }
         } catch (JSONException e) {
         }
@@ -104,12 +139,12 @@ public class QueryUtils {
 
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(1000 /* milliseconds */);
-            urlConnection.setConnectTimeout(15000 /* milliseconds */);
-            urlConnection.setRequestMethod("GET");
+            urlConnection.setReadTimeout(READ_TIMEOUT /* milliseconds */);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT /* milliseconds */);
+            urlConnection.setRequestMethod(GET_REQUEST);
             urlConnection.connect();
 
-            if (urlConnection.getResponseCode() == 200) {
+            if (urlConnection.getResponseCode() == HTTP_RESPONSE_OK) {
                 inputStream = urlConnection.getInputStream();
                 jsonResponse = readFromStream(inputStream);
             } else {
@@ -130,7 +165,7 @@ public class QueryUtils {
 
         StringBuilder output = new StringBuilder();
         if (inputStream != null) {
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName(UNICODE_FORMAT));
             BufferedReader reader = new BufferedReader(inputStreamReader);
             String line = reader.readLine();
             while(line != null) {
